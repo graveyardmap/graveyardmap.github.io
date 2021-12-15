@@ -1,0 +1,135 @@
+body {
+    margin: 0;
+    font-family: sans-serif;
+}
+
+button {
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
+    font-size: 14px;
+}
+
+.noselect {
+    user-select: none;
+}
+
+.top {
+    margin-top: 0;
+    background-color: rgb(160, 225, 255);
+    width: 100%;
+    border-bottom: 5px solid rgb(197, 197, 197);
+    box-shadow: 0 0 10px 2px rgb(187, 187, 187);
+}
+
+.top h1 {
+    margin: 0;
+    padding: 3px 0 2px 10px;
+}
+
+.top h4 {
+    margin: 0;
+    padding: 3px 0 2px 10px;
+}
+
+.searchTable {
+    box-shadow: 0 0 7px rgb(158, 158, 158);
+    border-radius: 4px;
+    border-spacing: 0;
+    margin: 60px auto;
+}
+
+.searchTable caption {
+    font-weight: 700;
+    font-size: 24px;
+    text-align: left;
+    margin: 10px auto 20px 5px;
+}
+
+.searchTable tr:hover {
+    background-color: rgb(224, 224, 224);
+}
+
+.searchTable tr:first-child:hover {
+    background-color: inherit;
+}
+
+.searchTable tr:nth-child(2):hover {
+    background-color: inherit;
+}
+
+.searchTable tr:last-child:hover {
+    background-color: inherit;
+}
+
+.searchTable td {
+    border: 1px solid rgb(184, 184, 184);
+    padding: 10px;
+}
+
+.searchTable tr:first-child {
+    color: rgb(117, 117, 117);
+    text-align: center;
+}
+
+.searchTable tr:nth-child(2) {
+    text-align: center;
+}
+
+.searchTable tr:nth-child(2) div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.searchTable tr:nth-child(2) img {}
+
+.searchTable tr:nth-child(2) input {
+    border: 0;
+    font-size: 16px;
+    padding: 0;
+}
+
+.searchTable tr:nth-child(2n) input:focus {
+    outline: none !important;
+}
+
+.searchTable tr:first-child td:first-child {
+    border-top-left-radius: 4px;
+}
+
+.searchTable tr:first-child td:last-child {
+    border-top-right-radius: 4px;
+}
+
+.searchTable tr:last-child td:first-child {
+    border-bottom-left-radius: 4px;
+}
+
+.searchTable tr:last-child td:last-child {
+    border-bottom-right-radius: 4px;
+}
+
+.tableNavigation {}
+
+.tableNavigation button {
+    margin: 4px;
+}
+
+.tableNavigation .selectedPage {
+    color: rgb(255, 75, 75);
+}
+
+.map {
+    display: block;
+    width: 100%;
+    height: 900px;
+    margin: 0;
+    border: 0;
+    border-top: 5px solid rgb(197, 197, 197);
+    box-shadow: 0 0 10px 2px rgb(187, 187, 187);
+}

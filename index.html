@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ПАК "Ассистент-К"</title>
+
+    <link rel="stylesheet" href="index.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/jszip.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
+    <script src="index.js"></script>
+</head>
+
+<body>
+    <div class="top">
+        <h1>ПАК "Ассистент-К"</h1>
+        <h4>Cистема учета захоронений</h4>
+        <input type="file" id="data_base" onchange="graveTable.readDataBase(this)">
+    </div>
+    <div class="content">
+
+
+        <table class="searchTable" id="searchTable">
+            <caption>Поиск места захоронения</caption>
+
+            <tr>
+                <td>Фамилия</td>
+                <td>Имя</td>
+                <td>Отчество</td>
+                <td>Дата рождения</td>
+                <td>Дата смерти</td>
+                <td>Дата погребения</td>
+                <td>Номер сектора</td>
+                <td>Номер ряда</td>
+                <td>Номер могилы</td>
+            </tr>
+            <tr>
+                <td>
+                    <div><img src="images/search_icon.png" width="20px" height="20px"><input type="text" size=12 onchange="graveTable.updateSearchParameter('secondName', this.value)"></div>
+                </td>
+                <td>
+                    <div><input type="text" size=12 onchange="graveTable.updateSearchParameter('firstName', this.value)"></div>
+                </td>
+                <td>
+                    <div><input type="text" size=16 onchange="graveTable.updateSearchParameter('patronymic', this.value)"></div>
+                </td>
+                <td>
+                    <div><input type="text" maxlength="10" size=10 onchange="graveTable.updateSearchParameter('birthDate', this.value)"></div>
+                </td>
+                <td>
+                    <div><input type="text" maxlength="10" size=10 onchange="graveTable.updateSearchParameter('deathDate', this.value)"></div>
+                </td>
+                <td>
+                    <div><input type="text" maxlength="10" size=10 onchange="graveTable.updateSearchParameter('graveDate', this.value)"></div>
+                </td>
+                <td>
+                    <div><input type="text" size=3 onchange="graveTable.updateSearchParameter('sectionNumber', this.value)"></div>
+                </td>
+                <td>
+                    <div><input type="text" size=3 onchange="graveTable.updateSearchParameter('rowNumber', this.value)"></div>
+                </td>
+                <td>
+                    <div><input type="text" size=3 onchange="graveTable.updateSearchParameter('graveNumber', this.value)"></div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan=9>
+                    <div class="tableNavigation noselect" id="tableNavigation" align="center">
+                        <button onclick="graveTable.setPage(1)"><<</button>
+                        <button onclick="graveTable.changePage(-1)"><</button>
+                        <button onclick="graveTable.changePage(1)">></button>
+                        <button onclick="graveTable.setPage(graveTable.getLastPage())">>></button>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <iframe class="map" id="map" loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBCMa8g07PJKIgWpgCkco7CuVi2XZv09JE&q=47.513863,42.248116&maptype=satellite">></iframe>
+    </div>
+</body>
+
+
+</html>
