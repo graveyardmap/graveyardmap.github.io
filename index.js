@@ -46,7 +46,7 @@ class GravesTable {
         setTimeout(() => {
             this.table = document.getElementById("searchTable");
             this.tableNavigation = document.getElementById("tableNavigation");
-        }, 100);
+        }, 10);
 
 
     }
@@ -192,6 +192,8 @@ class GravesTable {
     }
 
     readDataBase() {
+        let response = await fetch('data_base/data_base.xlsx');
+
         let file = new FileReader();
 
         file.onload = evt => {
@@ -247,7 +249,7 @@ class GravesTable {
 
         };
 
-        file.readAsBinaryString(document.getElementsByTagName('input')[0].files[0]);
+        file.readAsBinaryString(response.blob());
     }
 }
 
