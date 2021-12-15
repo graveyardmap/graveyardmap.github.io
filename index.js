@@ -251,7 +251,7 @@ class GravesTable {
 
         };
 
-        file.readAsBinaryString(response.blob());
+        file.readAsBinaryString(await response.blob());
     }
 }
 
