@@ -46,7 +46,9 @@ class GravesTable {
         setTimeout(() => {
             this.table = document.getElementById("searchTable");
             this.tableNavigation = document.getElementById("tableNavigation");
-        }, 10);
+
+            this.readDataBase();
+        }, 100);
 
 
     }
@@ -191,7 +193,7 @@ class GravesTable {
         }
     }
 
-    readDataBase() {
+    async readDataBase() {
         let response = await fetch('data_base/data_base.xlsx');
 
         let file = new FileReader();
