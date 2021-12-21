@@ -24,6 +24,45 @@ button {
     width: 100%;
     border-bottom: 5px solid rgb(197, 197, 197);
     box-shadow: 0 0 10px 2px rgb(187, 187, 187);
+    display: flex;
+    align-items: center;
+}
+
+.top div:last-child {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.load_data_base {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.load_data_base_label {
+    padding: 10px;
+    background-color: rgb(0, 183, 255);
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.load_data_base_label:hover {
+    background-color: rgb(67, 202, 255);
+}
+
+.download_data_base {
+    padding: 10px;
+    background-color: rgb(0, 183, 255);
+    margin: 5px;
+    border-radius: 5px;
+}
+
+.download_data_base:hover {
+    background-color: rgb(67, 202, 255);
 }
 
 .top h1 {
@@ -132,4 +171,9 @@ button {
     border: 0;
     border-top: 5px solid rgb(197, 197, 197);
     box-shadow: 0 0 10px 2px rgb(187, 187, 187);
+}
+
+.add_remove_button {
+    font-weight: 600;
+    font-size: 20px;
 }

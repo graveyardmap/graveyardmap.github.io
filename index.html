@@ -8,15 +8,25 @@
     <link rel="icon" href="favicon.ico?">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/jszip.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.js"></script>
     <script src="index.js"></script>
 </head>
 
 <body>
     <div class="top">
-        <h1>ПАК "Ассистент-К"</h1>
-        <h4>Cистема учета захоронений</h4>
+        <div>
+            <h1>ПАК "Ассистент-К"</h1>
+            <h4>Cистема учета захоронений</h4>
+        </div>
         <!--<input type="file" id="data_base" onchange="graveTable.readDataBase(this)">-->
+        <div class="noselect">
+            <label class="load_data_base_label ">
+                Загрузить таблицу
+                <input class="load_data_base" type="file" id="data_base" name="" onchange="graveTable.readDataBase(this)">
+            </label>
+            <button class="download_data_base" onclick="graveTable.getTableFile()">Сохранить таблицу</button>
+        </div>
     </div>
     <div class="content">
 
@@ -34,8 +44,9 @@
                 <td>Номер сектора</td>
                 <td>Номер ряда</td>
                 <td>Номер могилы</td>
+                <td></td>
             </tr>
-            <tr>
+            <tr id="search">
                 <td>
                     <div><img src="images/search_icon.png" width="20px" height="20px"><input type="text" size=12 onchange="graveTable.updateSearchParameter('secondName', this.value)"></div>
                 </td>
@@ -63,9 +74,12 @@
                 <td>
                     <div><input type="text" size=3 onchange="graveTable.updateSearchParameter('graveNumber', this.value)"></div>
                 </td>
+                <td>
+                    <button class="add_remove_button" onclick="graveTable.addPerson()">+</button>
+                </td>
             </tr>
             <tr>
-                <td colspan=9>
+                <td colspan=10>
                     <div class="tableNavigation noselect" id="tableNavigation" align="center">
                         <button onclick="graveTable.setPage(1)"><<</button>
                         <button onclick="graveTable.changePage(-1)"><</button>
