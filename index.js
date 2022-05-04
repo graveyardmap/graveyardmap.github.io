@@ -59,15 +59,47 @@ class GraveData {
 
 class GravesTable {
     constructor() {
-        setTimeout(() => {
-            this.table = document.getElementById("searchTable");
-            this.tableNavigation = document.getElementById("tableNavigation");
+        this.table = document.getElementById("searchTable");
+        this.tableBody = this.table.querySelector("tbody")
+        this.tableNavigation = document.getElementById("tableNavigation");
 
-            this.readDataBase();
-        }, 100);
+        ymaps.ready(() => {
+            this.map = new ymaps.Map("map", {
+                center: [47.513863, 42.248116],
+                zoom: 17,
+                controls: ['zoomControl', 'typeSelector'],
+                type: "yandex#satellite"
+            }, {
+                maxZoom: 20,
+                minZoom: 16
+            });
 
+            let showRegionsButton = new ymaps.control.Button({
+                data: {
+                    content: "Показать сектора"
+                },
+                options: {
+                    maxWidth: 1000
+                }
+            });
 
+            this.map.controls.add(showRegionsButton, { float: 'left' });
+
+            showRegionsButton.select = () => {
+                if (showRegionsButton.data.get("content") == "Показать сектора") {
+                    this.showSectionsRegions();
+                    showRegionsButton.data.set("content", "Скрыть сектора")
+                } else {
+                    this.hideSectionsRegions();
+                    showRegionsButton.data.set("content", "Показать сектора")
+                }
+            }
+        });
+
+        ymaps.ready(['polylabel.create']);
     }
+
+    map;
 
     dataBase;
 
@@ -83,11 +115,13 @@ class GravesTable {
 
     searchParameters = {};
 
-    sectionLocations = {};
+    sectionsRegions = {};
 
     showCount = 20;
 
     page = 1;
+
+    route;
 
     updateSearchParameter(name, value) {
         this.searchParameters[name] = value;
@@ -110,23 +144,39 @@ class GravesTable {
 
     }
 
-    removePerson(element) {
-        let listDuplicate = this.gravesList.slice();
-
-        for (let i = 0; i < 9; i++) {
-            listDuplicate = listDuplicate.filter((el) => { return element.children[i].textContent ? (el[["secondName", "firstName", "patronymic", "birthDate", "deathDate", "graveDate", "sectionNumber", "rowNumber", "graveNumber"][i]] == element.children[i].textContent) : (true) })
+    showRouteToSection(section) {
+        if (this.route != null) {
+            this.map.geoObjects.remove(this.route);
         }
 
-        this.gravesList.splice(this.gravesList.indexOf(listDuplicate[0]), 1);
+        let createRoute = (startPoint) => {
+            this.route = new ymaps.multiRouter.MultiRoute({
+                referencePoints: [
+                    startPoint,
+                    this.getSectionCoords(section)
+                ],
+                params: {
+                    routingMode: 'pedestrian'
+                }
+            });
 
-        this.updateSearch();
-        this.updateTable();
-        this.updateNavigation();
+            this.map.geoObjects.add(this.route);
+        }
+
+        navigator.geolocation.getCurrentPosition((posisiton) => {
+            createRoute([posisiton.coords.latitude, posisiton.coords.longitude]);
+        }, (error) => {
+            createRoute([47.511522, 42.244324])
+        }, {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+        });
     }
 
     addPerson() {
         let el = document.getElementById("search").children;
-        console.log(el[0].children[0].children[1].value);
+
         this.gravesList.push(GraveData.fromClearData(
             el[0].children[0].children[1].value,
             el[1].children[0].children[0].value,
@@ -146,12 +196,79 @@ class GravesTable {
         this.updateNavigation();
     }
 
-    getLastPage() {
-        return Math.ceil(this.sortedGravesList.length / this.showCount);
+    removePerson(element) {
+        let listDuplicate = this.gravesList.slice();
+
+        for (let i = 0; i < 9; i++) {
+            listDuplicate = listDuplicate.filter((el) => { return element.children[i].textContent ? (el[["secondName", "firstName", "patronymic", "birthDate", "deathDate", "graveDate", "sectionNumber", "rowNumber", "graveNumber"][i]] == element.children[i].textContent) : (true) })
+        }
+
+        this.gravesList.splice(this.gravesList.indexOf(listDuplicate[0]), 1);
+
+        this.updateSearch();
+        this.updateTable();
+        this.updateNavigation();
     }
 
-    isPageInRange() {
+    showSectionsRegions() {
+        var objectManager = new ymaps.ObjectManager();
 
+        for (let a in this.sectionsRegions) {
+
+            objectManager.add({
+                type: "Feature",
+                id: a,
+                geometry: {
+                    type: "Polygon",
+                    coordinates: [this.sectionsRegions[a]],
+                    fillRule: "nonZero"
+                },
+                properties: {
+                    name: `Сектор ${a}`
+                },
+                options: {
+                    fillColor: '#00ba47',
+                    strokeColor: '#000000',
+                    opacity: 0.25,
+                    strokeWidth: 3,
+                    strokeStyle: 'solid',
+                    labelDefaults: 'light',
+                    labelLayout: '{{properties.name}}',
+                    labelForceVisible: 'label'
+                }
+            });
+        }
+
+        this.map.geoObjects.add(objectManager);
+        ymaps.polylabel.create(this.map, objectManager);
+
+        objectManager.events.add('labelclick', (ev) => {
+            this.showRouteToSection(ev.get("objectId"));
+        });
+
+        console.log(objectManager);
+    }
+
+    hideSectionsRegions() {
+        let toRemove = [];
+
+        this.map.geoObjects.each((el) => {
+            if (el.options !== undefined) {
+                if (el.options._name !== undefined) {
+                    if ((el.options._name == "objectManager") || (el.options._name == "geoObject")) {
+                        toRemove.push(el);
+                    }
+                }
+            }
+        });
+
+        toRemove.forEach((el) => {
+            this.map.geoObjects.remove(el);
+        });
+    }
+
+    getLastPage() {
+        return Math.ceil(this.sortedGravesList.length / this.showCount);
     }
 
     changePage(count) {
@@ -176,64 +293,48 @@ class GravesTable {
 
     drawTable(list) {
 
+        let template = document.querySelector("#person")
+
         list.forEach(el => {
-            let newRow = this.table.insertRow(this.table.rows.length - 1);
+            let clone = template.content.cloneNode(true);
 
-            newRow.insertCell().textContent = el.secondName;
-            newRow.insertCell().textContent = el.firstName;
-            newRow.insertCell().textContent = el.patronymic;
-            newRow.insertCell().textContent = el.birthDate;
-            newRow.insertCell().textContent = el.deathDate;
-            newRow.insertCell().textContent = el.graveDate;
+            var cells = clone.querySelectorAll("td");
 
-            let sectionRow = newRow.insertCell();
+            cells[0].textContent = el.secondName;
+            cells[1].textContent = el.firstName;
+            cells[2].textContent = el.patronymic;
+            cells[3].textContent = el.birthDate;
+            cells[4].textContent = el.deathDate;
+            cells[5].textContent = el.graveDate;
+            cells[6].querySelector("div").childNodes[0].textContent = el.sectionNumber;
+            cells[7].textContent = el.rowNumber;
+            cells[8].textContent = el.graveNumber;
 
-            if (el.sectionNumber !== '') {
-                let sectionDiv = document.createElement('div');
+            this.table.insertRow(this.table.rows.length - 1).appendChild(clone);
+        });
+    }
 
-                sectionDiv.textContent = el.sectionNumber;
-                sectionDiv.style = "display: flex;flex-direction: row;align-items: center;";
+    getSectionCoords(section) {
+        let coords = [0, 0];
 
-                let sectionButton = document.createElement('button');
-
-                sectionButton.onclick = function() { graveTable.showOnMap(this.parentElement.textContent); };
-
-                sectionButton.style = "margin-left: auto;";
-
-                let sectionImage = document.createElement('img');
-
-                sectionImage.src = "images/show_on_map.png";
-                sectionImage.height = 20;
-
-                sectionRow.appendChild(sectionDiv);
-                sectionDiv.appendChild(sectionButton);
-                sectionButton.appendChild(sectionImage);
-            }
-            newRow.insertCell().textContent = el.rowNumber;
-            newRow.insertCell().textContent = el.graveNumber;
-
-            let removeButton = document.createElement('button');
-
-            removeButton.textContent = "–";
-            removeButton.onclick = function() { graveTable.removePerson(this.parentElement.parentElement); };
-            removeButton.classList = "add_remove_button";
-
-            let removeRow = newRow.insertCell();
-
-            removeRow.appendChild(removeButton);
+        this.sectionsRegions[section].forEach(el => {
+            coords[0] += el[0];
+            coords[1] += el[1];
         });
 
+        coords[0] /= this.sectionsRegions[section].length;
+        coords[1] /= this.sectionsRegions[section].length;
+
+        return coords;
     }
 
     showOnMap(section) {
-        let map = document.getElementById('map');
-        map.src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBCMa8g07PJKIgWpgCkco7CuVi2XZv09JE&q=${this.sectionLocations[section]}&maptype=satellite`;
-        map.scrollIntoView();
+        this.map.setCenter(this.getSectionCoords(section));
+        document.querySelector(".map").scrollIntoView();
     }
 
     updateTable() {
         this.clearTable();
-        console.log(this.sortedGravesList);
         this.drawTable(this.sortedGravesList.slice((this.page - 1) * this.showCount, this.page * this.showCount));
     }
 
@@ -261,7 +362,6 @@ class GravesTable {
         this.gravesList = [];
         this.sortedGravesList = [];
         this.searchParameters = {};
-        this.sectionLocations = {};
 
         this.updateNavigation();
         this.updateTable();
@@ -293,17 +393,26 @@ class GravesTable {
                     gravesSheet["F" + i] ? gravesSheet["F" + i]["w"] : null));
             }
 
-            //Сортировка массива по ФИО
             this.sortGravesList();
 
-            let locationsSheet = this.dataBase.Sheets[this.dataBase.SheetNames[1]];
+            let sectionsSheet = this.dataBase.Sheets[this.dataBase.SheetNames[1]];
 
             for (let i = 2; true; i++) {
-                if (locationsSheet["A" + i] === undefined) {
+                if (sectionsSheet["A" + i] === undefined) {
                     break;
                 }
 
-                this.sectionLocations[locationsSheet["A" + i]["w"]] = ((locationsSheet["B" + i] != undefined) ? locationsSheet["B" + i]["w"] : "0,0") + "," + ((locationsSheet["C" + i] != undefined) ? locationsSheet["C" + i]["w"] : "0,0");
+                if (sectionsSheet["B" + i] != undefined) {
+                    let coords = [];
+
+                    let coordsText = sectionsSheet["B" + i]["w"].split(", ");
+
+                    for (let a = 0; a < coordsText.length; a += 2) {
+                        coords.push([parseFloat(coordsText[a]), parseFloat(coordsText[a + 1])]);
+                    }
+
+                    this.sectionsRegions[sectionsSheet["A" + i]["w"]] = coords;
+                }
             }
 
             this.updateSearch();
@@ -317,28 +426,18 @@ class GravesTable {
 
     sortGravesList() {
         this.gravesList.sort((a, b) => {
+
             if (a.secondName < b.secondName) { return -1; }
             if (a.secondName > b.secondName) { return 1; }
 
-            if (a.secondName == b.secondName) {
-                if (a.firstName < b.firstName) { return -1; }
-                if (a.firstName > b.firstName) { return 1; }
+            if (a.firstName < b.firstName) { return -1; }
+            if (a.firstName > b.firstName) { return 1; }
 
-                if (a.firstName == b.firstName) {
-                    if (a.patronymic < b.patronymic) { return -1; }
-                    if (a.patronymic > b.patronymic) { return 1; }
-                }
-            }
+            if (a.patronymic < b.patronymic) { return -1; }
+            if (a.patronymic > b.patronymic) { return 1; }
 
             return 0;
         });
-    }
-
-    s2ab(s) {
-        var buf = new ArrayBuffer(s.length);
-        var view = new Uint8Array(buf);
-        for (var i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-        return buf;
     }
 
     getTableFile() {
@@ -348,31 +447,53 @@ class GravesTable {
 
         let sheet = this.dataBase.Sheets[this.dataBase.SheetNames[0]];
 
-        let arr = [
-            [
-                sheet["A1"],
-                sheet["B1"],
-                sheet["C1"],
-                sheet["D1"],
-                sheet["E1"],
-                sheet["F1"],
-                sheet["G1"]
-            ]
-        ];
+        let arr = [`` [
+            sheet["A1"],
+            sheet["B1"],
+            sheet["C1"],
+            sheet["D1"],
+            sheet["E1"],
+            sheet["F1"],
+            sheet["G1"]
+        ]];
 
         for (let i = 0; i < this.gravesList.length; i++) {
             arr.push([i + 1, this.gravesList[i].graveDate, `${this.gravesList[i].secondName} ${this.gravesList[i].firstName} ${this.gravesList[i].patronymic}`, this.gravesList[i].sectionNumber, this.gravesList[i].rowNumber, this.gravesList[i].graveNumber, `${this.gravesList[i].birthDate}-${this.gravesList[i].deathDate}`]);
         }
 
-
-
-        console.log(this.dataBase.Sheets[this.dataBase.SheetNames[0]])
-
-
         this.dataBase.Sheets[this.dataBase.SheetNames[0]] = XLSX.utils.aoa_to_sheet(arr);
 
-        saveAs(new Blob([this.s2ab(XLSX.write(this.dataBase, { bookType: 'xlsx', type: 'binary' }))], { type: "application/octet-stream" }), "Таблица.xlsx");
+        let xlsx = XLSX.write(this.dataBase, { bookType: 'xlsx', type: 'binary' });
+        let buffer = new ArrayBuffer(xlsx.length);
+        let view = new Uint8Array(buffer);
+
+        for (var i = 0; i < xlsx.length; i++) {
+            view[i] = xlsx.charCodeAt(i) & 0xFF;
+        }
+
+        saveAs(new Blob([buffer], { type: "application/octet-stream" }), "Таблица.xlsx");
     }
 }
 
 graveTable = new GravesTable();
+
+/*function getPolygon() {
+    let a = graveTable.map.geoObjects.getIterator();
+    let b = "";
+
+    a.getNext();
+    a.getNext();
+    a = a.getNext().geometry._coordPath._coordinates[0];
+
+    console.log(a);
+
+    for (let i = 0; i < a.length - 1; i++) {
+        b += `${a[i][0]}, ${a[i][1]}`
+
+        if (i < a.length - 2) {
+            b += ", ";
+        }
+    }
+
+    console.log(b);
+}*/

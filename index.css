@@ -173,7 +173,21 @@ button {
     box-shadow: 0 0 10px 2px rgb(187, 187, 187);
 }
 
-.add_remove_button {
+.removeButton {
     font-weight: 600;
     font-size: 20px;
+}
+
+.sectionNumber {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.sectionNumber button {
+    margin-left: auto;
+}
+
+.sectionNumber button img {
+    height: 20px;
 }
