@@ -94,6 +94,24 @@ class GravesTable {
                     showRegionsButton.data.set("content", "Показать сектора")
                 }
             }
+
+            let removeRouteButton = new ymaps.control.Button({
+                data: {
+                    content: "Убрать маршрут"
+                },
+                options: {
+                    maxWidth: 1000
+                }
+            });
+
+            this.map.controls.add(removeRouteButton, { float: 'left' });
+
+            removeRouteButton.select = () => {
+                if (this.route != null) {
+                    this.map.geoObjects.remove(this.route);
+                }
+
+            }
         });
 
         ymaps.ready(['polylabel.create']);
