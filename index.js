@@ -217,8 +217,11 @@ class GravesTable {
     removePerson(element) {
         let listDuplicate = this.gravesList.slice();
 
-        for (let i = 0; i < 9; i++) {
-            listDuplicate = listDuplicate.filter((el) => { return element.children[i].textContent ? (el[["secondName", "firstName", "patronymic", "birthDate", "deathDate", "graveDate", "sectionNumber", "rowNumber", "graveNumber"][i]] == element.children[i].textContent) : (true) })
+        listDuplicate = listDuplicate.filter((el) => this.filterPersons(el, element))
+
+        if (listDuplicate.length == 0) 
+        {
+            return
         }
 
         this.gravesList.splice(this.gravesList.indexOf(listDuplicate[0]), 1);
@@ -226,6 +229,19 @@ class GravesTable {
         this.updateSearch();
         this.updateTable();
         this.updateNavigation();
+    }
+
+    filterPersons(el, element) {
+
+        for (let i = 0; i < 9; i++) {
+
+            if (el[["secondName", "firstName", "patronymic", "birthDate", "deathDate", "graveDate", "sectionNumber", "rowNumber", "graveNumber"][i]] != null && el[["secondName", "firstName", "patronymic", "birthDate", "deathDate", "graveDate", "sectionNumber", "rowNumber", "graveNumber"][i]] != element.children[i].textContent.replace(/\s/g, '')) 
+            {
+                return false
+            }
+        }
+
+        return true
     }
 
     showSectionsRegions() {
